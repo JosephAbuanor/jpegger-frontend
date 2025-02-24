@@ -1,0 +1,57 @@
+:root {
+  --main-blue-color: #51388b;
+  --main-yellow-color: #ffb400;
+  --main-green-color: #1b6907;
+  --main-white-color: #fff;
+  --main-grey-color: #8e8e8e;
+  --main-dark-color: #1f1f1f;
+
+  --primary-color: var(--main-blue-color);
+  --secondary-color: var(--main-green-color);
+  --light-color: var(--main-white-color);
+  --dark-color: var(--main-dark-color);
+}
+
+/* scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--secondary-color);
+  border-radius: 10rem;
+}
+
+::-webkit-scrollbar-track-piece:start {
+  background: transparent;
+}
+::-webkit-scrollbar-track-piece:end {
+  background: transparent;
+}
+
+
+
+/*General*/
+body,
+html {
+  width: 100%;
+  height: 100%;
+  scroll-behavior: smooth;
+  color: var(--light-color);
+  background-color: var(--dark-color);
+}
+
+body {
+  font-family: "Merriweather", "Helvetica Neue", Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
