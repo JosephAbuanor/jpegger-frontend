@@ -8,9 +8,11 @@ import {
   AppBar
 } from '@mui/material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
-import AddTaskIcon from '@mui/icons-material/AddTask';
-import PersonAdd from '@mui/icons-material/PersonAdd';
-
+import Upload from '@mui/icons-material/Upload';
+import Delete from '@mui/icons-material/Delete';
+import ImageUpload from "./ImageUpload";
+import RecycleBin from "./RecycleBin";
+import UserImages from "./UserImages";
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -47,7 +49,7 @@ const Dashboard = ({auth}) => {
       <AppBar position="static" color="default">
         <Container maxWidth="xl">
           <Typography variant="h5" component="h1" sx={{ py: 2 }}>
-            Task Management System
+            Image Processing System
           </Typography>
           <code>
             <div>
@@ -69,17 +71,17 @@ const Dashboard = ({auth}) => {
             <Tab 
               icon={<ListAltIcon />} 
               iconPosition="start" 
-              label="Task List" 
+              label="User Images"
             />
             <Tab
-              icon={<AddTaskIcon />}
+              icon={<Upload />}
               iconPosition="start"
-              label="Create Task"
+              label="Upload image"
             />
             <Tab
-                icon={<PersonAdd />}
+                icon={<Delete />}
                 iconPosition="start"
-                label="Create User"
+                label="Recycle Bin"
             />
           </Tabs>
         </Container>
@@ -87,13 +89,13 @@ const Dashboard = ({auth}) => {
 
       <Container maxWidth="xl">
         <TabPanel value={tabValue} index={0}>
-          Hi
+          <UserImages/>
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
-          Hello
+          <ImageUpload/>
         </TabPanel>
         <TabPanel value={tabValue} index={2}>
-          Ciao
+          <RecycleBin/>
         </TabPanel>
       </Container>
     </Box>
