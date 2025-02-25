@@ -13,7 +13,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-
+import {apiBaseUrl} from "../api";
 const ImageUpload = ({ auth }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -90,36 +90,49 @@ const ImageUpload = ({ auth }) => {
     setUploadProgress(0);
 
     try {
-      // Create form data
-      const formData = new FormData();
-      formData.append('image', selectedImage.file);
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedImage.file);
+      reader.onloadend = async () => {
+        const base64Image = reader.result;
 
-      // You would replace this with your actual API endpoint
-      // const response = await fetch('your-upload-api-endpoint', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${auth.user?.access_token}`
-      //   },
-      //   body: formData
-      // });
+        // Create request payload
+        const payload = {
+          image: base64Image,
+          userId: auth.user.id, // Assuming you have user ID in auth object
+          contentType: selectedImage.file.type,
+          filename: selectedImage.file.name
+        };
 
-      // Simulate upload with a delay and progress updates
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setUploadProgress(progress);
-      }
+        // Send POST request to Lambda function
+        const response = await fetch(`${apiBaseUrl}/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.user.access_token}`
+          },
+          body: JSON.stringify(payload)
+        });
 
-      // Mark image as uploaded
-      setSelectedImage(prev => ({
-        ...prev,
-        uploaded: true
-      }));
+        if (!response.ok) {
+          throw new Error('Error uploading image');
+        }
 
-      setSnackbar({
-        open: true,
-        message: 'Image uploaded successfully',
-        severity: 'success'
-      });
+        const result = await response.json();
+        console.log('Upload result:', result);
+
+        // Mark image as uploaded
+        setSelectedImage(prev => ({
+          ...prev,
+          uploaded: true
+        }));
+
+        setSnackbar({
+          open: true,
+          message: 'Image uploaded successfully',
+          severity: 'success'
+        });
+      };
     } catch (error) {
       console.error('Upload error:', error);
       setSnackbar({
@@ -132,7 +145,6 @@ const ImageUpload = ({ auth }) => {
       setUploadProgress(100);
     }
   };
-
   const handleReset = () => {
     removeFile();
     setUploadProgress(0);

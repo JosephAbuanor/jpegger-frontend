@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Tabs,
@@ -31,14 +31,6 @@ const TabPanel = ({ children, value, index, ...other }) => (
 
 const Dashboard = ({auth}) => {
   const [tabValue, setTabValue] = useState(0);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (auth.user && auth.user.profile && auth.user.profile["cognito:groups"]) {
-      setIsAdmin(auth.user.profile["cognito:groups"].includes("AdminGroup"));
-    }
-
-  }, [auth.user]);
 
 
   const handleTabChange = (event, newValue) => {
@@ -57,7 +49,6 @@ const Dashboard = ({auth}) => {
               <pre> ID Token: {auth.user?.id_token} </pre>
               <pre> Access Token: {auth.user?.access_token} </pre>
               <pre> Refresh Token: {auth.user?.refresh_token} </pre>
-              <pre> Admin: {isAdmin} </pre>
 
               <button onClick={() => auth.removeUser()}>Sign out</button>
             </div>
@@ -89,13 +80,13 @@ const Dashboard = ({auth}) => {
 
       <Container maxWidth="xl">
         <TabPanel value={tabValue} index={0}>
-          <UserImages/>
+          <UserImages auth={auth}/>
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
-          <ImageUpload/>
+          <ImageUpload auth={auth}/>
         </TabPanel>
         <TabPanel value={tabValue} index={2}>
-          <RecycleBin/>
+          <RecycleBin auth={auth}/>
         </TabPanel>
       </Container>
     </Box>
