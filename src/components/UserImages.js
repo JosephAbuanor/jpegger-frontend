@@ -56,7 +56,7 @@ const UserImages = ({ auth }) => {
 
     useEffect(() => {
         fetchUserImages();
-    }, []);
+    });
 
     const fetchUserImages = async () => {
         setLoading(true);
