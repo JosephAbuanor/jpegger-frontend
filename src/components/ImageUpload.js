@@ -99,7 +99,7 @@ const ImageUpload = ({ auth }) => {
         // Create request payload
         const payload = {
           image: base64Image,
-          userId: auth.user.id, // Assuming you have user ID in auth object
+          userId: auth.user.profile.sub, // Assuming you have user ID in auth object
           contentType: selectedImage.file.type,
           filename: selectedImage.file.name
         };
