@@ -185,7 +185,7 @@ const UserImages = ({ auth }) => {
         <Box sx={{ py: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6">
-                    My Images
+                    Blog Images
                 </Typography>
 
                 <Chip
