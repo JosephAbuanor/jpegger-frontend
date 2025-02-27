@@ -20,6 +20,7 @@ const ImageUpload = ({ auth }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const fileInputRef = useRef(null);
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -47,6 +48,15 @@ const ImageUpload = ({ auth }) => {
         open: true,
         message: 'Only image files are allowed',
         severity: 'warning'
+      });
+      return;
+    }
+    // Check file size limit
+    if (file.size > MAX_FILE_SIZE) {
+      setSnackbar({
+        open: true,
+        message: 'File size must be 5MB or less',
+        severity: 'error'
       });
       return;
     }
