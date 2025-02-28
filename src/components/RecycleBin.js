@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     Box,
     Typography,
@@ -26,9 +26,10 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import InfoIcon from '@mui/icons-material/Info';
 import SortIcon from '@mui/icons-material/Sort';
 import SearchIcon from '@mui/icons-material/Search';
-import { InputAdornment, TextField, Menu, MenuItem } from '@mui/material';
+import {InputAdornment, TextField, Menu, MenuItem} from '@mui/material';
+import {apiBaseUrl} from "../api";
 
-const RecycleBin = ({ auth }) => {
+const RecycleBin = ({auth}) => {
     const [deletedImages, setDeletedImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -36,95 +37,59 @@ const RecycleBin = ({ auth }) => {
     const [currentImage, setCurrentImage] = useState(null);
     const [actionType, setActionType] = useState('');
     const [processing, setProcessing] = useState(false);
-    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [snackbar, setSnackbar] = useState({open: false, message: '', severity: 'success'});
     const [searchQuery, setSearchQuery] = useState('');
     const [sortAnchorEl, setSortAnchorEl] = useState(null);
     const [sortBy, setSortBy] = useState('deletedDate');
     const [sortDirection, setSortDirection] = useState('desc');
+    const fetchCalled = useRef(false);
 
     // Fetch deleted images on component mount
     useEffect(() => {
-        fetchDeletedImages();
-    }, []);
+        if (!fetchCalled.current) {
+            fetchDeletedImages();
+            fetchCalled.current = true;
+        }
+    }, )
 
     const fetchDeletedImages = async () => {
         setLoading(true);
         setError(null);
 
         try {
-            // This would be your actual API endpoint
-            // const response = await fetch('your-deleted-images-endpoint', {
-            //   headers: {
-            //     'Authorization': `Bearer ${auth.user?.access_token}`
-            //   }
-            // });
-
-            // if (!response.ok) {
-            //   throw new Error('Failed to fetch deleted images');
-            // }
-
-            // const data = await response.json();
-
-            // Simulate API response
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            const mockData = [
-                {
-                    id: '1',
-                    name: 'sunset_beach.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 1240000,
-                    deletedDate: new Date(2025, 1, 20).toISOString(),
-                    originalUploadDate: new Date(2025, 0, 15).toISOString(),
-                    deletedBy: 'john.doe@example.com'
-                },
-                {
-                    id: '2',
-                    name: 'mountain_view.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 2430000,
-                    deletedDate: new Date(2025, 1, 18).toISOString(),
-                    originalUploadDate: new Date(2024, 11, 5).toISOString(),
-                    deletedBy: 'jane.smith@example.com'
-                },
-                {
-                    id: '3',
-                    name: 'family_portrait.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 3560000,
-                    deletedDate: new Date(2025, 1, 15).toISOString(),
-                    originalUploadDate: new Date(2024, 10, 22).toISOString(),
-                    deletedBy: 'john.doe@example.com'
-                },
-                {
-                    id: '4',
-                    name: 'company_logo.png',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 580000,
-                    deletedDate: new Date(2025, 1, 10).toISOString(),
-                    originalUploadDate: new Date(2024, 9, 30).toISOString(),
-                    deletedBy: 'admin@example.com'
-                },
-                {
-                    id: '5',
-                    name: 'product_showcase.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 1820000,
-                    deletedDate: new Date(2025, 1, 5).toISOString(),
-                    originalUploadDate: new Date(2024, 8, 12).toISOString(),
-                    deletedBy: 'marketing@example.com'
+            const userId = auth.user.profile.sub;
+            const response = await fetch(`${apiBaseUrl}/deleted-images?userId=${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${auth.user?.access_token}`
                 }
-            ];
+            });
 
-            setDeletedImages(mockData);
+            if (!response.ok) {
+                throw new Error('Failed to fetch user images');
+            }
+
+            const data = await response.json();
+
+            // Map the API response to the existing state structure
+            const images = data.images.map(image => ({
+                id: image.ImageId,
+                name: image.Filename,
+                thumbnailUrl: image.imageUrl,
+                fullUrl: image.imageUrl,
+                size: image.Size,
+                uploadDate: image.CreatedAt,
+                uploadedBy: auth.user?.profile.email || 'current.user@example.com',
+                type: image.ContentType,
+                s3Key: image.S3Key,
+                s3Bucket: image.S3Bucket,
+                tags: [] // Assuming tags are not provided in the response
+            }));
+
+            setDeletedImages(images);
         } catch (err) {
             console.error('Error fetching deleted images:', err);
-            setError('Failed to load deleted images. Please try again later.');
+            setError('Failed to fetch your images. Please try again later.');
         } finally {
             setLoading(false);
         }
@@ -233,7 +198,7 @@ const RecycleBin = ({ auth }) => {
     };
 
     const handleSnackbarClose = () => {
-        setSnackbar({ ...snackbar, open: false });
+        setSnackbar({...snackbar, open: false});
     };
 
     const formatDate = (dateString) => {
@@ -286,9 +251,9 @@ const RecycleBin = ({ auth }) => {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-                <CircularProgress />
-                <Typography variant="h6" sx={{ ml: 2 }}>
+            <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+                <CircularProgress/>
+                <Typography variant="h6" sx={{ml: 2}}>
                     Loading deleted images...
                 </Typography>
             </Box>
@@ -297,8 +262,8 @@ const RecycleBin = ({ auth }) => {
 
     if (error) {
         return (
-            <Box sx={{ py: 2 }}>
-                <Alert severity="error" sx={{ mb: 2 }}>
+            <Box sx={{py: 2}}>
+                <Alert severity="error" sx={{mb: 2}}>
                     {error}
                 </Alert>
                 <Button
@@ -312,21 +277,21 @@ const RecycleBin = ({ auth }) => {
     }
 
     return (
-        <Box sx={{ py: 2 }}>
+        <Box sx={{py: 2}}>
 
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
                 <TextField
                     placeholder="Search deleted images..."
                     variant="outlined"
                     size="small"
                     value={searchQuery}
                     onChange={handleSearch}
-                    sx={{ width: '60%' }}
+                    sx={{width: '60%'}}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
-                                <SearchIcon />
+                                <SearchIcon/>
                             </InputAdornment>
                         ),
                     }}
@@ -339,7 +304,7 @@ const RecycleBin = ({ auth }) => {
                 <Box>
                     <Tooltip title="Sort images">
                         <Button
-                            startIcon={<SortIcon />}
+                            startIcon={<SortIcon/>}
                             onClick={handleSortClick}
                             variant="outlined"
                             size="small"
@@ -379,7 +344,7 @@ const RecycleBin = ({ auth }) => {
                     backgroundColor: '#f5f5f5',
                     borderRadius: 2
                 }}>
-                    <DeleteForeverIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                    <DeleteForeverIcon sx={{fontSize: 48, color: 'text.secondary', mb: 2}}/>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                         No deleted images found
                     </Typography>
@@ -391,22 +356,22 @@ const RecycleBin = ({ auth }) => {
                 <Grid container spacing={3}>
                     {sortedImages.map((image) => (
                         <Grid item xs={12} sm={6} md={4} key={image.id}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <Card sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
                                 <CardMedia
                                     component="img"
                                     height="140"
                                     image={image.thumbnailUrl}
                                     alt={image.name}
-                                    sx={{ objectFit: 'cover' }}
+                                    sx={{objectFit: 'cover'}}
                                 />
-                                <CardContent sx={{ flexGrow: 1 }}>
+                                <CardContent sx={{flexGrow: 1}}>
                                     <Typography variant="subtitle1" noWrap title={image.name}>
                                         {image.name}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         Size: {formatFileSize(image.size)}
                                     </Typography>
-                                    <Divider sx={{ my: 1 }} />
+                                    <Divider sx={{my: 1}}/>
                                     <Typography variant="body2" color="text.secondary">
                                         Deleted: {formatDate(image.deletedDate)}
                                     </Typography>
@@ -418,7 +383,7 @@ const RecycleBin = ({ auth }) => {
                                     <Tooltip title="Restore image">
                                         <Button
                                             size="small"
-                                            startIcon={<RestoreIcon />}
+                                            startIcon={<RestoreIcon/>}
                                             onClick={() => handleRestoreClick(image)}
                                         >
                                             Restore
@@ -428,16 +393,16 @@ const RecycleBin = ({ auth }) => {
                                         <Button
                                             size="small"
                                             color="error"
-                                            startIcon={<DeleteForeverIcon />}
+                                            startIcon={<DeleteForeverIcon/>}
                                             onClick={() => handleDeleteForeverClick(image)}
                                         >
                                             Delete
                                         </Button>
                                     </Tooltip>
-                                    <Box sx={{ ml: 'auto' }}>
+                                    <Box sx={{ml: 'auto'}}>
                                         <Tooltip title="View details">
                                             <IconButton size="small">
-                                                <InfoIcon fontSize="small" />
+                                                <InfoIcon fontSize="small"/>
                                             </IconButton>
                                         </Tooltip>
                                     </Box>
@@ -476,7 +441,7 @@ const RecycleBin = ({ auth }) => {
                         variant="contained"
                         autoFocus
                         disabled={processing}
-                        startIcon={processing ? <CircularProgress size={20} /> : null}
+                        startIcon={processing ? <CircularProgress size={20}/> : null}
                     >
                         {processing ? 'Processing...' : actionType === 'restore' ? 'Restore' : 'Delete Permanently'}
                     </Button>
@@ -488,12 +453,12 @@ const RecycleBin = ({ auth }) => {
                 open={snackbar.open}
                 autoHideDuration={6000}
                 onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
             >
                 <Alert
                     onClose={handleSnackbarClose}
                     severity={snackbar.severity}
-                    sx={{ width: '100%' }}
+                    sx={{width: '100%'}}
                 >
                     {snackbar.message}
                 </Alert>

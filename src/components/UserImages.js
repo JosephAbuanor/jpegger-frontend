@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Typography,
@@ -33,6 +33,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import {apiBaseUrl} from "../api";
 
 const UserImages = ({ auth }) => {
     const [images, setImages] = useState([]);
@@ -53,108 +54,50 @@ const UserImages = ({ auth }) => {
     const [selectedImageId, setSelectedImageId] = useState(null);
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [viewImage, setViewImage] = useState(null);
+    const fetchCalled = useRef(false);
 
     useEffect(() => {
-        fetchUserImages();
-    });
+        if (!fetchCalled.current) {
+            fetchUserImages();
+            fetchCalled.current = true;
+        }
+    }, );
 
     const fetchUserImages = async () => {
         setLoading(true);
         setError(null);
 
         try {
-            // This would be your actual API endpoint
-            // const response = await fetch('your-user-images-endpoint', {
-            //   headers: {
-            //     'Authorization': `Bearer ${auth.user?.access_token}`
-            //   }
-            // });
-
-            // if (!response.ok) {
-            //   throw new Error('Failed to fetch user images');
-            // }
-
-            // const data = await response.json();
-
-            // Simulate API response
-            await new Promise(resolve => setTimeout(resolve, 1200));
-
-            const mockData = [
-                {
-                    id: '1',
-                    name: 'product_photo_1.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 1850000,
-                    uploadDate: new Date(2025, 1, 22).toISOString(),
-                    uploadedBy: auth.user?.profile.email || 'current.user@example.com',
-                    type: 'image/jpeg',
-                    dimensions: '1920x1080',
-                    tags: ['product', 'marketing']
-                },
-                {
-                    id: '2',
-                    name: 'team_photo.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 2150000,
-                    uploadDate: new Date(2025, 1, 20).toISOString(),
-                    uploadedBy: auth.user?.profile.email || 'current.user@example.com',
-                    type: 'image/jpeg',
-                    dimensions: '2048x1536',
-                    tags: ['team', 'company']
-                },
-                {
-                    id: '3',
-                    name: 'banner_image.png',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 1240000,
-                    uploadDate: new Date(2025, 1, 18).toISOString(),
-                    uploadedBy: auth.user?.profile.email || 'current.user@example.com',
-                    type: 'image/png',
-                    dimensions: '1600x600',
-                    tags: ['marketing', 'banner']
-                },
-                {
-                    id: '4',
-                    name: 'event_poster.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 980000,
-                    uploadDate: new Date(2025, 1, 15).toISOString(),
-                    uploadedBy: auth.user?.profile.email || 'current.user@example.com',
-                    type: 'image/jpeg',
-                    dimensions: '2400x3600',
-                    tags: ['event', 'marketing']
-                },
-                {
-                    id: '5',
-                    name: 'profile_picture.jpg',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 540000,
-                    uploadDate: new Date(2025, 1, 10).toISOString(),
-                    uploadedBy: auth.user?.profile.email || 'current.user@example.com',
-                    type: 'image/jpeg',
-                    dimensions: '512x512',
-                    tags: ['profile', 'personal']
-                },
-                {
-                    id: '6',
-                    name: 'infographic_q1.png',
-                    thumbnailUrl: '/api/placeholder/400/300',
-                    fullUrl: '/api/placeholder/1200/900',
-                    size: 1680000,
-                    uploadDate: new Date(2025, 1, 5).toISOString(),
-                    uploadedBy: auth.user?.profile.email || 'current.user@example.com',
-                    type: 'image/png',
-                    dimensions: '1920x3000',
-                    tags: ['infographic', 'statistics']
+            const userId = auth.user.profile.sub;
+            const response = await fetch(`${apiBaseUrl}/user-images?userId=${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${auth.user?.access_token}`
                 }
-            ];
+            });
 
-            setImages(mockData);
+            if (!response.ok) {
+                throw new Error('Failed to fetch user images');
+            }
+
+            const data = await response.json();
+
+            // Map the API response to the existing state structure
+            const images = data.images.map(image => ({
+                id: image.ImageId,
+                name: image.Filename,
+                thumbnailUrl: image.imageUrl,
+                fullUrl: image.imageUrl,
+                size: image.Size,
+                uploadDate: image.CreatedAt,
+                uploadedBy: auth.user?.profile.email || 'current.user@example.com',
+                type: image.ContentType,
+                s3Key: image.S3Key,
+                s3Bucket: image.S3Bucket,
+                tags: [] // Assuming tags are not provided in the response
+            }));
+
+            setImages(images);
         } catch (err) {
             console.error('Error fetching user images:', err);
             setError('Failed to load your images. Please try again later.');
@@ -175,22 +118,30 @@ const UserImages = ({ auth }) => {
 
     const handleConfirmDelete = async () => {
         if (!currentImage) return;
-
+        console.log(currentImage)
         try {
-            // This would be your actual delete API endpoint
-            // await fetch(`your-delete-image-endpoint/${currentImage.id}`, {
-            //   method: 'DELETE',
-            //   headers: {
-            //     'Authorization': `Bearer ${auth.user?.access_token}`
-            //   }
-            // });
+            const response = await fetch(`${apiBaseUrl}/soft-delete-image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${auth.user?.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: auth.user.profile.sub,
+                    imageId: currentImage.id,
+                    s3Key: currentImage.s3Key // Assuming s3Key is part of the image object
+                })
+            });
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (!response.ok) {
+                throw new Error('Failed to delete image');
+            }
+
+            const data = await response.json();
 
             setSnackbar({
                 open: true,
-                message: `"${currentImage.name}" has been moved to Recycle Bin`,
+                message: data.message,
                 severity: 'success'
             });
 
@@ -200,14 +151,13 @@ const UserImages = ({ auth }) => {
             console.error('Error deleting image:', err);
             setSnackbar({
                 open: true,
-                message: 'Failed to delete image. Please try again.',
+                message: 'Failed to delete image. Please try again later.',
                 severity: 'error'
             });
         } finally {
             handleDialogClose();
         }
     };
-
     const handleShareClick = async (image) => {
         setCurrentImage(image);
         setShareDialogOpen(true);

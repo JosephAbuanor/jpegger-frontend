@@ -6,7 +6,6 @@ import {signOutRedirect} from "./api";
 
 function App() {
     const auth = useAuth();
-    console.log(auth)
 
     if (auth.isLoading) {
         return <div>Loading...</div>;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     Box,
     Typography,
@@ -33,10 +33,14 @@ const UserImages = ({ auth }) => {
     const [sortDirection, setSortDirection] = useState('desc');
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [viewImage, setViewImage] = useState(null);
+    const fetchCalled = useRef(false);
 
     useEffect(() => {
-        fetchAllImages();
-    },[]);
+        if (!fetchCalled.current) {
+            fetchAllImages();
+            fetchCalled.current = true;
+        }
+    }, );
 
     const fetchAllImages = async () => {
         setLoading(true);
@@ -60,8 +64,8 @@ const UserImages = ({ auth }) => {
             const images = data.images.map(image => ({
                 id: image.ImageId,
                 name: image.Filename,
-                thumbnailUrl: image.image,
-                fullUrl: image.image,
+                thumbnailUrl: image.imageUrl,
+                fullUrl: image.imageUrl,
                 size: image.Size,
                 uploadDate: image.CreatedAt,
                 uploadedBy: auth.user?.profile.email || 'current.user@example.com',
