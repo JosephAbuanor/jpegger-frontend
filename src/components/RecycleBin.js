@@ -120,40 +120,56 @@ const RecycleBin = ({auth}) => {
 
         try {
             if (actionType === 'restore') {
-                // This would be your actual restore API endpoint
-                // await fetch(`your-restore-image-endpoint/${currentImage.id}`, {
-                //   method: 'POST',
-                //   headers: {
-                //     'Authorization': `Bearer ${auth.user?.access_token}`
-                //   }
-                // });
+                const response = await fetch(`${apiBaseUrl}/restore-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${auth.user?.access_token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: auth.user.profile.sub,
+                        imageId: currentImage.id,
+                        s3Key: currentImage.s3Key // Assuming s3Key is part of the image object
+                    })
+                });
 
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (!response.ok) {
+                    throw new Error('Failed to restore image');
+                }
+
+                const data = await response.json();
 
                 setSnackbar({
                     open: true,
-                    message: `"${currentImage.name}" has been restored successfully`,
+                    message: data.message,
                     severity: 'success'
                 });
 
-                // Remove the restored image from the list
+                // Remove the deleted image from the list
                 setDeletedImages(prev => prev.filter(img => img.id !== currentImage.id));
             } else if (actionType === 'delete') {
-                // This would be your actual permanent delete API endpoint
-                // await fetch(`your-permanent-delete-endpoint/${currentImage.id}`, {
-                //   method: 'DELETE',
-                //   headers: {
-                //     'Authorization': `Bearer ${auth.user?.access_token}`
-                //   }
-                // });
+                const response = await fetch(`${apiBaseUrl}/delete-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${auth.user?.access_token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: auth.user.profile.sub,
+                        imageId: currentImage.id,
+                        s3Key: currentImage.s3Key // Assuming s3Key is part of the image object
+                    })
+                });
 
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (!response.ok) {
+                    throw new Error('Failed to delete image');
+                }
+
+                const data = await response.json();
 
                 setSnackbar({
                     open: true,
-                    message: `"${currentImage.name}" has been permanently deleted`,
+                    message: data.message,
                     severity: 'info'
                 });
 
