@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     Box,
     Typography,
@@ -35,7 +35,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {apiBaseUrl} from "../api";
 
-const UserImages = ({ auth }) => {
+const UserImages = ({auth}) => {
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -45,7 +45,7 @@ const UserImages = ({ auth }) => {
     const [sortAnchorEl, setSortAnchorEl] = useState(null);
     const [sortBy, setSortBy] = useState('uploadDate');
     const [sortDirection, setSortDirection] = useState('desc');
-    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [snackbar, setSnackbar] = useState({open: false, message: '', severity: 'success'});
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
     const [shareLinkLoading, setShareLinkLoading] = useState(false);
     const [shareLink, setShareLink] = useState('');
@@ -61,7 +61,7 @@ const UserImages = ({ auth }) => {
             fetchUserImages();
             fetchCalled.current = true;
         }
-    }, );
+    },);
 
     const fetchUserImages = async () => {
         setLoading(true);
@@ -165,29 +165,26 @@ const UserImages = ({ auth }) => {
         setLinkCopied(false);
 
         try {
-            // This would be your actual share link API endpoint
-            // const response = await fetch(`your-get-share-link-endpoint/${image.id}`, {
-            //   method: 'POST',
-            //   headers: {
-            //     'Authorization': `Bearer ${auth.user?.access_token}`,
-            //     'Content-Type': 'application/json'
-            //   },
-            //   body: JSON.stringify({ expiryDays: 7 }) // Optional expiry
-            // });
+            const response = await fetch(`${apiBaseUrl}/share-image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${auth.user?.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    imageId: image.id,
+                    s3Key: image.s3Key // Assuming s3Key is part of the image object
+                })
+            });
 
-            // if (!response.ok) {
-            //   throw new Error('Failed to generate share link');
-            // }
+            if (!response.ok) {
+                throw new Error('Failed to generate share link');
+            }
 
-            // const data = await response.json();
-            // const link = data.shareLink;
+            const data = await response.json();
+            const link = data.url;
 
-            // Simulate API response with a delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Generate a mock share link
-            const mockLink = `https://your-image-service.com/share/${image.id}?token=abc123xyz789`;
-            setShareLink(mockLink);
+            setShareLink(link);
         } catch (err) {
             console.error('Error generating share link:', err);
             setSnackbar({
@@ -200,7 +197,6 @@ const UserImages = ({ auth }) => {
             setShareLinkLoading(false);
         }
     };
-
     const handleShareDialogClose = () => {
         setShareDialogOpen(false);
         setCurrentImage(null);
@@ -249,7 +245,7 @@ const UserImages = ({ auth }) => {
     };
 
     const handleSnackbarClose = () => {
-        setSnackbar({ ...snackbar, open: false });
+        setSnackbar({...snackbar, open: false});
     };
 
     const handleMoreMenuClick = (event, imageId) => {
@@ -316,9 +312,9 @@ const UserImages = ({ auth }) => {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-                <CircularProgress />
-                <Typography variant="h6" sx={{ ml: 2 }}>
+            <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+                <CircularProgress/>
+                <Typography variant="h6" sx={{ml: 2}}>
                     Loading your images...
                 </Typography>
             </Box>
@@ -327,8 +323,8 @@ const UserImages = ({ auth }) => {
 
     if (error) {
         return (
-            <Box sx={{ py: 2 }}>
-                <Alert severity="error" sx={{ mb: 2 }}>
+            <Box sx={{py: 2}}>
+                <Alert severity="error" sx={{mb: 2}}>
                     {error}
                 </Alert>
                 <Button
@@ -342,8 +338,8 @@ const UserImages = ({ auth }) => {
     }
 
     return (
-        <Box sx={{ py: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box sx={{py: 2}}>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
                 <Typography variant="h6">
                     My Images
                 </Typography>
@@ -354,18 +350,18 @@ const UserImages = ({ auth }) => {
                 />
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
                 <TextField
                     placeholder="Search images by name or tag..."
                     variant="outlined"
                     size="small"
                     value={searchQuery}
                     onChange={handleSearch}
-                    sx={{ width: '60%' }}
+                    sx={{width: '60%'}}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
-                                <SearchIcon />
+                                <SearchIcon/>
                             </InputAdornment>
                         ),
                     }}
@@ -374,7 +370,7 @@ const UserImages = ({ auth }) => {
                 <Box>
                     <Tooltip title="Sort images">
                         <Button
-                            startIcon={<SortIcon />}
+                            startIcon={<SortIcon/>}
                             onClick={handleSortClick}
                             variant="outlined"
                             size="small"
@@ -411,7 +407,7 @@ const UserImages = ({ auth }) => {
                     backgroundColor: '#f5f5f5',
                     borderRadius: 2
                 }}>
-                    <Box component="img" src="/api/placeholder/100/100" alt="No images" sx={{ mb: 2, opacity: 0.6 }} />
+                    <Box component="img" src="/api/placeholder/100/100" alt="No images" sx={{mb: 2, opacity: 0.6}}/>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                         No images found
                     </Typography>
@@ -423,7 +419,7 @@ const UserImages = ({ auth }) => {
                 <Grid container spacing={3}>
                     {sortedImages.map((image) => (
                         <Grid item xs={12} sm={6} md={4} key={image.id}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <Card sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
                                 <CardMedia
                                     component="img"
                                     height="180"
@@ -435,42 +431,46 @@ const UserImages = ({ auth }) => {
                                     }}
                                     onClick={() => handleViewImage(image)}
                                 />
-                                <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <Typography variant="subtitle1" noWrap title={image.name} sx={{ width: '85%' }}>
+                                <CardContent sx={{flexGrow: 1, pb: 1}}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start'
+                                    }}>
+                                        <Typography variant="subtitle1" noWrap title={image.name} sx={{width: '85%'}}>
                                             {image.name}
                                         </Typography>
                                         <IconButton
                                             size="small"
                                             onClick={(e) => handleMoreMenuClick(e, image.id)}
-                                            sx={{ mt: -1, mr: -1 }}
+                                            sx={{mt: -1, mr: -1}}
                                         >
-                                            <MoreVertIcon fontSize="small" />
+                                            <MoreVertIcon fontSize="small"/>
                                         </IconButton>
                                     </Box>
                                     <Typography variant="body2" color="text.secondary">
                                         {formatFileSize(image.size)} • {formatDate(image.uploadDate)}
                                     </Typography>
                                     {image.tags && image.tags.length > 0 && (
-                                        <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                        <Box sx={{mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
                                             {image.tags.map(tag => (
                                                 <Chip
                                                     key={tag}
                                                     label={tag}
                                                     size="small"
                                                     variant="outlined"
-                                                    sx={{ fontSize: '0.7rem' }}
+                                                    sx={{fontSize: '0.7rem'}}
                                                 />
                                             ))}
                                         </Box>
                                     )}
                                 </CardContent>
-                                <Divider />
+                                <Divider/>
                                 <CardActions>
                                     <Tooltip title="Get shareable link">
                                         <Button
                                             size="small"
-                                            startIcon={<ShareIcon />}
+                                            startIcon={<ShareIcon/>}
                                             onClick={() => handleShareClick(image)}
                                         >
                                             Share
@@ -480,7 +480,7 @@ const UserImages = ({ auth }) => {
                                         <Button
                                             size="small"
                                             color="error"
-                                            startIcon={<DeleteIcon />}
+                                            startIcon={<DeleteIcon/>}
                                             onClick={() => handleDeleteClick(image)}
                                         >
                                             Delete
@@ -537,15 +537,15 @@ const UserImages = ({ auth }) => {
                 </DialogTitle>
                 <DialogContent>
                     {shareLinkLoading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                            <CircularProgress size={30} />
-                            <Typography variant="body1" sx={{ ml: 2 }}>
+                        <Box sx={{display: 'flex', justifyContent: 'center', py: 3}}>
+                            <CircularProgress size={30}/>
+                            <Typography variant="body1" sx={{ml: 2}}>
                                 Generating shareable link...
                             </Typography>
                         </Box>
                     ) : (
                         <>
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{mb: 2}}>
                                 <Typography variant="body2" color="text.secondary" gutterBottom>
                                     Copy this link to share your image with anyone:
                                 </Typography>
@@ -561,14 +561,14 @@ const UserImages = ({ auth }) => {
                                                     onClick={handleCopyLink}
                                                     color={linkCopied ? "success" : "default"}
                                                 >
-                                                    {linkCopied ? <CheckCircleIcon /> : <ContentCopyIcon />}
+                                                    {linkCopied ? <CheckCircleIcon/> : <ContentCopyIcon/>}
                                                 </IconButton>
                                             </InputAdornment>
                                         ),
                                     }}
                                 />
                                 {linkCopied && (
-                                    <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
+                                    <Typography variant="caption" color="success.main" sx={{mt: 1, display: 'block'}}>
                                         Link copied to clipboard!
                                     </Typography>
                                 )}
@@ -577,7 +577,7 @@ const UserImages = ({ auth }) => {
                                 • Anyone with this link can view the image
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                • The link will expire after 7 days
+                                • The link will expire after 3 hours
                             </Typography>
                         </>
                     )}
@@ -590,7 +590,7 @@ const UserImages = ({ auth }) => {
                         <Button
                             onClick={handleCopyLink}
                             variant="contained"
-                            startIcon={linkCopied ? <CheckCircleIcon /> : <ContentCopyIcon />}
+                            startIcon={linkCopied ? <CheckCircleIcon/> : <ContentCopyIcon/>}
                             color={linkCopied ? "success" : "primary"}
                         >
                             {linkCopied ? "Copied!" : "Copy Link"}
@@ -609,7 +609,7 @@ const UserImages = ({ auth }) => {
                     const image = images.find(img => img.id === selectedImageId);
                     if (image) handleViewImage(image);
                 }}>
-                    <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
+                    <VisibilityIcon fontSize="small" sx={{mr: 1}}/>
                     View Image
                 </MenuItem>
                 <MenuItem onClick={() => {
@@ -617,7 +617,7 @@ const UserImages = ({ auth }) => {
                     if (image) handleShareClick(image);
                     handleMoreMenuClose();
                 }}>
-                    <ShareIcon fontSize="small" sx={{ mr: 1 }} />
+                    <ShareIcon fontSize="small" sx={{mr: 1}}/>
                     Get Share Link
                 </MenuItem>
                 <MenuItem onClick={() => {
@@ -625,7 +625,7 @@ const UserImages = ({ auth }) => {
                     if (image) handleDeleteClick(image);
                     handleMoreMenuClose();
                 }}>
-                    <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                    <DeleteIcon fontSize="small" sx={{mr: 1}}/>
                     Delete to Recycle Bin
                 </MenuItem>
             </Menu>
@@ -637,9 +637,9 @@ const UserImages = ({ auth }) => {
                 maxWidth="lg"
                 fullWidth
             >
-                <Box sx={{ position: 'relative' }}>
+                <Box sx={{position: 'relative'}}>
                     <IconButton
-                        sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(0,0,0,0.4)', color: 'white' }}
+                        sx={{position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(0,0,0,0.4)', color: 'white'}}
                         onClick={() => setViewDialogOpen(false)}
                     >
                         &times;
@@ -656,9 +656,9 @@ const UserImages = ({ auth }) => {
                         }}
                     />
                 </Box>
-                <DialogContent sx={{ pb: 1 }}>
+                <DialogContent sx={{pb: 1}}>
                     <Typography variant="h6">{viewImage?.name}</Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                    <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 1}}>
                         <Typography variant="body2" color="text.secondary">
                             {viewImage?.dimensions} • {formatFileSize(viewImage?.size || 0)}
                         </Typography>
@@ -667,7 +667,7 @@ const UserImages = ({ auth }) => {
                         </Typography>
                     </Box>
                     {viewImage?.tags && viewImage.tags.length > 0 && (
-                        <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        <Box sx={{mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
                             {viewImage.tags.map(tag => (
                                 <Chip
                                     key={tag}
@@ -681,7 +681,7 @@ const UserImages = ({ auth }) => {
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        startIcon={<ShareIcon />}
+                        startIcon={<ShareIcon/>}
                         onClick={() => {
                             setViewDialogOpen(false);
                             handleShareClick(viewImage);
@@ -690,7 +690,7 @@ const UserImages = ({ auth }) => {
                         Share
                     </Button>
                     <Button
-                        startIcon={<DeleteIcon />}
+                        startIcon={<DeleteIcon/>}
                         color="error"
                         onClick={() => {
                             setViewDialogOpen(false);
@@ -707,12 +707,12 @@ const UserImages = ({ auth }) => {
                 open={snackbar.open}
                 autoHideDuration={6000}
                 onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
             >
                 <Alert
                     onClose={handleSnackbarClose}
                     severity={snackbar.severity}
-                    sx={{ width: '100%' }}
+                    sx={{width: '100%'}}
                 >
                     {snackbar.message}
                 </Alert>
