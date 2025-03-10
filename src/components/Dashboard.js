@@ -15,6 +15,7 @@ import ImageUpload from "./ImageUpload";
 import RecycleBin from "./RecycleBin";
 import UserImages from "./UserImages";
 import Blog from "./Blog";
+import ImageEditor from './watermark';
 
 const TabPanel = ({children, value, index, ...other}) => (
     <div
@@ -73,6 +74,11 @@ const Dashboard = ({auth}) => {
                             iconPosition="start"
                             label="Blog"
                         />
+                        <Tab
+                            icon={<ListAltIcon/>}
+                            iconPosition="start"
+                            label="Water"
+                        />
                     </Tabs>
                 </Container>
             </AppBar>
@@ -89,6 +95,9 @@ const Dashboard = ({auth}) => {
                 </TabPanel>
                 <TabPanel value={tabValue} index={3}>
                     <Blog auth={auth}/>
+                </TabPanel>
+                <TabPanel value={tabValue} index={4}>
+                    <ImageEditor auth={auth}/>
                 </TabPanel>
             </Container>
         </Box>

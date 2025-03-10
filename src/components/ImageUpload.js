@@ -98,7 +98,6 @@ const ImageUpload = ({ auth }) => {
 
     setUploading(true);
     setUploadProgress(0);
-
     try {
       // Convert image to base64
       const reader = new FileReader();
@@ -110,6 +109,7 @@ const ImageUpload = ({ auth }) => {
         const payload = {
           image: base64Image,
           userId: auth.user.profile.sub,
+          userName: auth.user.profile.email,
           contentType: selectedImage.file.type,
           filename: selectedImage.file.name
         };
